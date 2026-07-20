@@ -1,38 +1,38 @@
 # IP Addressing Plan
 
-## VLAN networks
+## Network Allocation
 
-| VLAN | Name       | Network           | Subnet mask     | Default gateway | Assignment         |
-| ---: | ---------- | ----------------- | --------------- | --------------- | ------------------ |
-|   10 | EMPLOYEES  | `192.168.10.0/24` | `255.255.255.0` | `192.168.10.1`  | DHCP               |
-|   20 | SERVERS    | `192.168.20.0/24` | `255.255.255.0` | `192.168.20.1`  | Static             |
-|   99 | MANAGEMENT | `192.168.99.0/24` | `255.255.255.0` | `192.168.99.1`  | Static or reserved |
+| Network        | VLAN | Purpose                               | Subnet          | Default Gateway |
+| -------------- | ---: | ------------------------------------- | --------------- | --------------- |
+| Employees      |   10 | Employee workstations                 | 192.168.10.0/24 | 192.168.10.1    |
+| Servers        |   20 | Internal servers                      | 192.168.20.0/24 | 192.168.20.1    |
+| Administration |   99 | Administration and network management | 192.168.99.0/24 | 192.168.99.1    |
+| WAN            |  N/A | Edge router to simulated ISP          | 203.0.113.0/30  | N/A             |
 
 The first usable address in each subnet is assigned to the firewall/router and acts as the default gateway.
 
 ## Device addresses
 
-| Device              | Interface or role    | VLAN | Address              | Assignment     |
-| ------------------- | -------------------- | ---: | -------------------- | -------------- |
-| Firewall/router     | Employee gateway     |   10 | `192.168.10.1/24`    | Static         |
-| Employee PC         | Employee client      |   10 | `192.168.10.100–199` | DHCP           |
-| Firewall/router     | Server gateway       |   20 | `192.168.20.1/24`    | Static         |
-| Internal web server | HTTPS service        |   20 | `192.168.20.10/24`   | Static         |
-| Syslog server       | Central logging      |   20 | `192.168.20.20/24`   | Static         |
-| Firewall/router     | Management gateway   |   99 | `192.168.99.1/24`    | Static         |
-| Managed switch      | Management interface |   99 | `192.168.99.2/24`    | Static         |
-| Administrator PC    | Administration       |   99 | `192.168.99.10/24`   | Static         |
-| Firewall/router     | WAN interface        |  WAN | Platform-dependent   | Static or DHCP |
+| Device    | Interface     | Address          | Allocation |
+| --------- | ------------- | ---------------- | ---------- |
+| ISP-R1    | G0/0          | 203.0.113.1/30   | Static     |
+| EDGE-R1   | G0/1          | 203.0.113.2/30   | Static     |
+| EDGE-R1   | G0/0.10       | 192.168.10.1/24  | Static     |
+| EDGE-R1   | G0/0.20       | 192.168.20.1/24  | Static     |
+| EDGE-R1   | G0/0.99       | 192.168.99.1/24  | Static     |
+| SW1       | VLAN 99       | 192.168.99.2/24  | Static     |
+| EMP-PC1   | FastEthernet0 | DHCP             | Dynamic    |
+| SRV1      | FastEthernet0 | 192.168.20.10/24 | Static     |
+| ADMIN-PC1 | FastEthernet0 | 192.168.99.10/24 | Static     |
 
-## VLAN 10 DHCP scope
+## DHCP Plan
 
-| Setting              | Value                                |
-| -------------------- | ------------------------------------ |
-| Network              | `192.168.10.0/24`                    |
-| Address range        | `192.168.10.100–192.168.10.199`      |
-| Default gateway      | `192.168.10.1`                       |
-| DNS server           | To be selected during implementation |
-| Suggested lease time | 24 hours                             |
+Employee devices will receive addresses through DHCP.
+
+- Network: `192.168.10.0/24`
+- Default gateway: `192.168.10.1`
+- DHCP range: `192.168.10.100–192.168.10.199`
+- Reserved infrastructure range: `192.168.10.1–192.168.10.99`
 
 Addresses below `.100` are reserved for infrastructure or future statically addressed devices.
 

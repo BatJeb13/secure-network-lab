@@ -4,34 +4,35 @@
 
 ```mermaid
 flowchart TD
-    EXT["Internet or simulated<br/>external network"]
-    FW["Edge firewall/router"]
-    SW["Managed switch"]
-    EMP["Employee PC<br/>VLAN 10"]
-    WEB["Internal web server<br/>VLAN 20"]
-    LOG["Syslog server<br/>VLAN 20"]
-    ADM["Administrator PC<br/>VLAN 99"]
+    ISP["ISP-R1<br>Simulated Internet"]
+    EDGE["EDGE-R1<br>Routing, Firewall and NAT"]
+    SW["SW1<br>Managed Layer 2 Switch"]
+    EMP["EMP-PC1<br>VLAN 10 — Employees"]
+    SRV["SRV1<br>VLAN 20 — Servers"]
+    ADM["ADMIN-PC1<br>VLAN 99 — Administration"]
 
-    EXT ---|"WAN link"| FW
-    FW ---|"802.1Q trunk"| SW
-    SW ---|"Access port VLAN 10"| EMP
-    SW ---|"Access port VLAN 20"| WEB
-    SW ---|"Access port VLAN 20"| LOG
-    SW ---|"Access port VLAN 99"| ADM
+    ISP ---|"WAN link"| EDGE
+    EDGE ---|"802.1Q trunk"| SW
+    SW ---|"Access port"| EMP
+    SW ---|"Access port"| SRV
+    SW ---|"Access port"| ADM
 ```
 
 ## Proposed switch ports
 
-| Switch port         | Connected device    | Port mode |       VLAN |
-| ------------------- | ------------------- | --------- | ---------: |
-| GigabitEthernet 0/1 | Firewall/router     | Trunk     | 10, 20, 99 |
-| FastEthernet 0/1    | Employee PC         | Access    |         10 |
-| FastEthernet 0/2    | Internal web server | Access    |         20 |
-| FastEthernet 0/3    | Syslog server       | Access    |         20 |
-| FastEthernet 0/4    | Administrator PC    | Access    |         99 |
-| Remaining ports     | Unused              | Disabled  |       None |
+| Switch port         | Connected device | Port mode |       VLAN |
+| ------------------- | ---------------- | --------- | ---------: |
+| GigabitEthernet 0/1 | Firewall/router  | Trunk     | 10, 20, 99 |
+| FastEthernet 0/1    | Employee PC      | Access    |         10 |
+| FastEthernet 0/2    | Internal server  | Access    |         20 |
+| FastEthernet 0/3    | Administrator PC | Access    |         99 |
+| Remaining ports     | Unused           | Disabled  |       None |
 
-## Firewall
+## ISP-R1
+
+This simulates an external network and the organisation ISP
+
+## Firewall EDGE-R1
 
 - This will be the central security device
   It should perform:
@@ -42,7 +43,7 @@ flowchart TD
 - Logging of permitted and blocked traffic
 - Firewall adim from VLAN 99
 
-## Switch
+## Switch SW1
 
 This will provide:
 
@@ -54,7 +55,7 @@ This will provide:
 
 # VLANs
 
-## VLAN 10: Employees
+## VLAN 10: Employees EMP-PC1
 
 - This contains normal employee devices
 - Employees will have the DHCP apply network settings
@@ -63,23 +64,21 @@ This will provide:
 
 ### Example
 
-- EMPLOYEE-PC-01
+- EMP-PC1
 - Address asigned with DHCP
 - Expected range: 192.168.10.100 - 192.168.10.199
 
-## VLAN 20: Servers
+## VLAN 20: Servers SRV1
 
 - Servers normally use static addresses cause clients and firewalls need to know where to find them
 - Initally one machine can provide both web service and logging service.
-- Later it will be split as seen in the topology diagram.
 
 ### Example
 
 - Internal web server: 192.168.20.10
-- Central syslog server: 192.168.20.20
-  Employee devices might be allowed to access HTTPS on the web server but not SSH, file sharing, databse ports or other unnecessary services
+- Employee devices might be allowed to access HTTPS on the web server but not SSH, file sharing, databse ports or other unnecessary services
 
-## VLAN 99: Administration
+## VLAN 99: Administration ADMIN-PC1
 
 - This is the most trusted network
   It contains:
