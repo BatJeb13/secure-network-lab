@@ -13,17 +13,17 @@ The first usable address in each subnet is assigned to the firewall/router and a
 
 ## Device addresses
 
-| Device    | Interface     | Address          | Allocation |
-| --------- | ------------- | ---------------- | ---------- |
-| ISP-R1    | G0/0          | 203.0.113.1/30   | Static     |
-| EDGE-R1   | G0/1          | 203.0.113.2/30   | Static     |
-| EDGE-R1   | G0/0.10       | 192.168.10.1/24  | Static     |
-| EDGE-R1   | G0/0.20       | 192.168.20.1/24  | Static     |
-| EDGE-R1   | G0/0.99       | 192.168.99.1/24  | Static     |
-| SW1       | VLAN 99       | 192.168.99.2/24  | Static     |
-| EMP-PC1   | FastEthernet0 | DHCP             | Dynamic    |
-| SRV1      | FastEthernet0 | 192.168.20.10/24 | Static     |
-| ADMIN-PC1 | FastEthernet0 | 192.168.99.10/24 | Static     |
+| Device    | Interface     | Address         | Allocation |
+| --------- | ------------- | --------------- | ---------- |
+| ISP-R1    | G0/0          | 203.0.113.1/30  | Static     |
+| EDGE-R1   | G0/1          | 203.0.113.2/30  | Static     |
+| EDGE-R1   | G0/0.10       | 192.168.10.1/24 | Static     |
+| EDGE-R1   | G0/0.20       | 192.168.20.1/24 | Static     |
+| EDGE-R1   | G0/0.99       | 192.168.99.1/24 | Static     |
+| SW1       | VLAN 99       | 192.168.99.2/24 | Static     |
+| EMP-PC1   | FastEthernet0 | DHCP            | Dynamic    |
+| SRV1      | FastEthernet0 | 192.168.20.1/24 | Static     |
+| ADMIN-PC1 | FastEthernet0 | 192.168.99.1/24 | Static     |
 
 ## DHCP Plan
 
