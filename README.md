@@ -1,108 +1,83 @@
-# secure-network-lab
+# Secure Network Lab
 
-## Project objective
+This is a small enterprise-style network that I built in Cisco Packet Tracer to improve my practical understanding of VLANs, inter-VLAN routing, DHCP and NAT.
 
-- The objective of this project is to design, implement, secure and test a small segmented organisation network
-- The network seperates emplyee devices, internal servers and network management devices using VLANS
-- Traffic between these networks will be controlled according to a default deny policy
+The network separates employee devices, internal servers and administration devices into three VLANs. A router-on-a-stick design provides routing between the VLANs, while PAT allows the private networks to reach a simulated external network through one outside address.
 
-The goal is to demonstrate practical knowledge of:
+## What I configured
 
-- VLANs
-- IP addressing
-- DHCP
-- Routing
-- Firewall rules
-- NAT
-- Secure administration
-- Centralised logging
-- Network testing
+- Three VLANs for employee, server and administration traffic
+- Access ports for end devices and an 802.1Q trunk to the router
+- Router-on-a-stick inter-VLAN routing
+- DHCP for employee and administration devices
+- Static addressing for the internal server
+- A simulated ISP and external test server
+- A default route towards the ISP
+- NAT overload, also known as PAT
+- A management IP address for the switch
+- A structured connectivity test plan
 
-## Business scenario
+## Topology
 
-- General Consulting is a small organisation with approximately 20 employees and one IT adimistrator
-- Employees need internet access and access to an internal web application.
-- The organisation also operates a central logging server
-- Network equipment must be only managed by the IT admin
+```text
+Employee PCs ----\
+                  \
+Internal Server ---- SW1 ===== EDGE-R1 ----- ISP-R1 ----- External Server
+                  /       trunk       /30              198.51.100.10
+Admin PC --------/          |
+                            |-- VLAN 10: Employee
+                            |-- VLAN 20: Server
+                            `-- VLAN 99: Admin
+```
 
-Placing all devices on one network would be insecure therefore the network is devided into seperate employee, server and admin VLANs
+`=====` represents the 802.1Q trunk between SW1 and EDGE-R1.
 
-## Network topology
+## Addressing summary
 
-The network contains:
+| Network or device | Address | Purpose |
+|---|---:|---|
+| Employee VLAN 10 | `192.168.10.0/24` | Employee devices |
+| EDGE-R1 G0/0.10 | `192.168.10.1/24` | Employee default gateway |
+| Employee PCs | DHCP from `.21` | Client addressing |
+| Server VLAN 20 | `192.168.20.0/24` | Internal servers |
+| EDGE-R1 G0/0.20 | `192.168.20.1/24` | Server default gateway |
+| Internal Server | `192.168.20.10/24` | Static server address |
+| Admin VLAN 99 | `192.168.99.0/24` | Administration devices |
+| EDGE-R1 G0/0.99 | `192.168.99.1/24` | Admin default gateway |
+| SW1 management SVI | `192.168.99.2/24` | Switch management |
+| Admin PC | DHCP from `.21` | Client addressing |
+| EDGE-R1 G0/1 | `203.0.113.2/30` | Outside/NAT interface |
+| ISP-R1 G0/0 | `203.0.113.1/30` | ISP-facing next hop |
+| ISP-R1 G0/1 | `198.51.100.1/24` | External network gateway |
+| External Server | `198.51.100.10/24` | External connectivity test |
 
-- Internet or simulated external network
-- An edge firewall/router
-- A managed switch
-- Employee devices on VLAN 10
-- Servers on VLAN 20
-- Admin workstation on VLAN 99
+## Repository documentation
 
-(SEE docs/topology.md)
+- [`docs/network-design.md`](docs/network-design.md) explains the design choices and packet flows.
+- [`docs/configuration-guide.md`](docs/configuration-guide.md) contains the build steps and IOS commands.
+- [`docs/test-plan.md`](docs/test-plan.md) contains the checks I used to verify the network.
+- [`docs/troubleshooting.md`](docs/troubleshooting.md) records common faults and the commands I used to investigate them.
+- [`docs/security-and-limitations.md`](docs/security-and-limitations.md) explains what the current lab does and does not secure.
 
-## IP addressing plan
+## Main verification commands
 
-The network will use a IPv4 with the following subnets:
-
-| VLAN | Name       | Subnet            | Purpose                               |
-| ---: | ---------- | ----------------- | ------------------------------------- |
-|   10 | EMPLOYEES  | `192.168.10.0/24` | Employee workstations                 |
-|   20 | SERVERS    | `192.168.20.0/24` | Internal services                     |
-|   99 | MANAGEMENT | `192.168.99.0/24` | Administration and network management |
-
-(SEE complete ip plan docs/ip-plan.md)
-
-## Technologies used
-
-Planned technologies:
-
-- Cisco packet tracker
-- Cisco IOS-style switch and router configuration
-- VLANs and IEEE 802.1q trunking
-- DHCP
-- IPv4 routing
-- Firewall rules or access-control lists
-- NAT/PAT
-- SSH
-- Syslog
-- Git and Github
-
-## Security controls
-
-Planeed controls:
-
-- Seperation of employees, servers and administration using VLANs
-- Default-deny filtering between networks
-- Restricted employee access to server VLAN
-- Management access restricted to VLAN 99
-- SSH instead of Telnet
-- Disabled unused switch ports
-- Centralised network-device logging
-- NAT for employee interent access
-
-(SEE docs/security-policy.md)
-
-## Configuration
-
-- Sanitised devices will be added to the `configs/` directory in weeks 2 and 3
-- Passwords, private keys and other secrets will not be comitted.
-
-## Testing
-
-- Both permitted and prohibitted traffic will be tested
-
-(SEE docs/test-plan.md)
-
-## Troubleshooting
-
-Problems, causes and solutions discovered during implementation will be recorded here in weeks 2-4
-
-## Limitations
-
-- The initial implementation is a small educational lab rather than production network
-- It uses a limited number of devices and simplified services.
-- Possible future improvements include redundant network devices, a dedicated monitoring VLAN, VPN access, intrusion detection and more advanced switch-security controls.
+```text
+show vlan brief
+show interfaces trunk
+show ip interface brief
+show ip route
+show ip dhcp binding
+show ip dhcp pool
+show ip nat translations
+show ip nat statistics
+show running-config
+```
 
 ## What I learned
 
-This section will be completed after implementation and testing.
+The most useful part of this project was seeing how the different topics work together. VLANs create separate Layer 2 broadcast domains, the router subinterfaces provide Layer 3 gateways, DHCP supplies client addressing, the default route sends unknown traffic to the ISP, and PAT translates the private source addresses when traffic leaves the network.
+
+## Current limitation
+
+The VLANs are separated at Layer 2, but EDGE-R1 currently routes between them. This means VLANs provide segmentation but not a complete access-control policy by themselves. The next improvement is to add extended ACLs so that employee devices cannot access the Admin VLAN while authorised administration traffic is still allowed.
+
