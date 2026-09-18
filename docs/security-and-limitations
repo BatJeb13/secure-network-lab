@@ -1,0 +1,63 @@
+# Security and Limitations
+
+## What the current design improves
+
+The network does not place every device in the same Layer 2 broadcast domain. Employee, server and administration devices are assigned to separate VLANs and IP subnets. This improves organisation, reduces unnecessary broadcast traffic and creates clear boundaries where access controls can be applied.
+
+The administration VLAN also contains the switch management address instead of placing that address in the employee network.
+
+## Important limitation
+
+VLAN separation does not automatically block communication between subnets. EDGE-R1 has a directly connected route to all three VLANs, so it will currently route between them.
+
+The standard ACL used by PAT is not a security filter. It only tells NAT which source addresses are eligible for translation.
+
+For that reason, I describe the current project as a **segmented network lab**, not as a fully hardened production network.
+
+## Planned access policy
+
+A sensible next stage is an extended ACL policy such as:
+
+| Source | Destination | Intended action | Reason |
+|---|---|---|---|
+| Employee VLAN | Admin VLAN | Deny | Users should not directly access the management network |
+| Employee VLAN | Required server services | Permit | Employees still need approved business services |
+| Employee VLAN | Other server traffic | Deny or restrict | Reduces unnecessary access to servers |
+| Admin VLAN | Network infrastructure | Permit | Administrators need management access |
+| Internal VLANs | External network | Permit as required | Allows normal outbound connectivity through PAT |
+
+The exact server ports should be chosen based on the services enabled on the internal server rather than permitting all traffic by default.
+
+## Other improvements I would make
+
+- Add named extended ACLs and test both permitted and denied traffic.
+- Disable unused switch ports and place them in an unused parking VLAN.
+- Add port security to appropriate access ports.
+- Use SSH rather than Telnet for device management.
+- Configure local user accounts, encrypted secrets and login controls.
+- Set an explicit unused native VLAN on trunk links.
+- Add DHCP snooping and Dynamic ARP Inspection on supported switches.
+- Add logging, NTP and configuration backups.
+- Use a firewall for more detailed stateful filtering in a production design.
+- Replace the single switch and router with redundant devices where availability matters.
+
+## Lab assumptions
+
+- Packet Tracer models the required behaviour but does not reproduce every feature or operational detail of real hardware.
+- The ISP and external server are simulated; no real Internet connection is used.
+- The public-looking networks `198.51.100.0/24` and `203.0.113.0/30` are documentation ranges used for examples.
+- DNS is not configured, so tests use IP addresses.
+- High availability, monitoring and central authentication are outside the current scope.
+
+## Security testing to add with ACLs
+
+When ACLs are added, the test plan should prove both sides of the policy:
+
+1. Employee-to-Admin traffic is blocked.
+2. Employee access to approved server services still works.
+3. Admin management access still works.
+4. Required external access still works through PAT.
+5. ACL counters increase for both permitted and denied matches.
+
+Testing denied traffic is important because a successful ping only proves reachability; it does not prove that the security policy is correct.
+
